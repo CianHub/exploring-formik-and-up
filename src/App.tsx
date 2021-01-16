@@ -7,6 +7,7 @@ import {
   Radio,
   TextField,
 } from '@material-ui/core';
+import { isPropertySignature } from 'typescript';
 
 type Props = {
   label: string;
@@ -16,6 +17,23 @@ const MyRadio: React.FC<Props> = ({ label, ...props }) => {
   const [field, meta] = useField(props);
   return <FormControlLabel {...field} control={<Radio />} label={label} />;
 };
+
+const MyTextField: React.FC<FieldAttributes<{}>> = ({
+  placeholder,
+  ...props
+}) => {
+  const [field, meta] = useField<{}>(props);
+  const errorText = meta.error && meta.touched ? meta.error : '';
+  return (
+    <TextField
+      {...field}
+      helperText={errorText}
+      placeholder={placeholder}
+      error={!!errorText}
+    />
+  );
+};
+
 function App() {
   return (
     <div className="App" role="application">
@@ -34,15 +52,23 @@ function App() {
           // post async call
           setSubmitting(false);
         }}
+        validate={(values) => {
+          const errors: Record<string, string> = {};
+
+          if (values.firstName.includes('bob')) {
+            errors.firstName = 'no bob';
+          }
+
+          return errors;
+        }}
       >
-        {({ values, isSubmitting, handleChange, handleBlur }) => (
+        {({ values, errors, isSubmitting, handleChange, handleBlur }) => (
           <Form>
             <div>
-              <Field
+              <MyTextField
                 name="firstName"
                 type="input"
                 placeholder="firstName"
-                as={TextField}
               />
             </div>
             <div>
@@ -80,6 +106,12 @@ function App() {
             <div>
               <MyRadio name="yogurt" type="radio" value="peach" label="peach" />
               <MyRadio name="yogurt" type="radio" value="apple" label="apple" />
+              <MyRadio
+                name="yogurt"
+                type="radio"
+                value="dog food"
+                label="dog food"
+              />
             </div>
             <div>
               <Button disabled={isSubmitting} type="submit">
@@ -87,6 +119,7 @@ function App() {
               </Button>
             </div>
             <pre>{JSON.stringify(values)}</pre>
+            <pre>{JSON.stringify(errors)}</pre>
           </Form>
         )}
       </Formik>
