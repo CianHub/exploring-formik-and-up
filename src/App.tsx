@@ -1,7 +1,21 @@
 import React from 'react';
-import { Formik, Field, Form } from 'formik';
-import { Button, Checkbox, TextField } from '@material-ui/core';
+import { Formik, Field, Form, useField, FieldAttributes } from 'formik';
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Radio,
+  TextField,
+} from '@material-ui/core';
 
+type Props = {
+  label: string;
+} & FieldAttributes<{}>;
+
+const MyRadio: React.FC<Props> = ({ label, ...props }) => {
+  const [field, meta] = useField(props);
+  return <FormControlLabel {...field} control={<Radio />} label={label} />;
+};
 function App() {
   return (
     <div className="App" role="application">
@@ -62,6 +76,10 @@ function App() {
                 value="sugar"
                 as={Checkbox}
               />
+            </div>
+            <div>
+              <MyRadio name="yogurt" type="radio" value="peach" label="peach" />
+              <MyRadio name="yogurt" type="radio" value="apple" label="apple" />
             </div>
             <div>
               <Button disabled={isSubmitting} type="submit">
