@@ -1,13 +1,35 @@
 import React from 'react';
-import { Formik, Field, Form, useField, FieldAttributes } from 'formik';
+import {
+  Formik,
+  Field,
+  Form,
+  useField,
+  FieldAttributes,
+  FieldArray,
+} from 'formik';
 import {
   Button,
   Checkbox,
   FormControlLabel,
+  MenuItem,
   Radio,
+  Select,
   TextField,
 } from '@material-ui/core';
-import { isPropertySignature } from 'typescript';
+import * as yup from 'yup';
+import SelectInput from '@material-ui/core/Select/SelectInput';
+
+const validationSchema = yup.object({
+  firstName: yup.string().required().max(10),
+  pets: yup
+    .array()
+    .of(
+      yup.object({
+        name: yup.string().required().max(10),
+        type: yup.string().required().max(10),
+      })
+    ),
+});
 
 type Props = {
   label: string;
@@ -43,6 +65,8 @@ function App() {
           lastName: '',
           isTall: false,
           cookies: [],
+          yoguert: '',
+          pets: [{ type: 'dog', name: 'Frank', id: '' + Math.random() }],
         }}
         onSubmit={(data, { setSubmitting }) => {
           setSubmitting(true);
@@ -52,15 +76,7 @@ function App() {
           // post async call
           setSubmitting(false);
         }}
-        validate={(values) => {
-          const errors: Record<string, string> = {};
-
-          if (values.firstName.includes('bob')) {
-            errors.firstName = 'no bob';
-          }
-
-          return errors;
-        }}
+        validationSchema={validationSchema}
       >
         {({ values, errors, isSubmitting, handleChange, handleBlur }) => (
           <Form>
@@ -114,10 +130,51 @@ function App() {
               />
             </div>
             <div>
+              <FieldArray name="pets">
+                {(arrayHelpers) => {
+                  return (
+                    <div>
+                      <Button
+                        onClick={() =>
+                          arrayHelpers.push({
+                            type: 'cat',
+                            name: '',
+                            id: '' + Math.random(),
+                          })
+                        }
+                      >
+                        Add pet
+                      </Button>
+                      {values.pets.map((pet, index) => {
+                        const name = `pets.${index}.name`;
+                        const itemName = `pets.${index}.type`;
+                        const id = `pets.${index}.id`;
+
+                        return (
+                          <div key={id}>
+                            <MyTextField name={name} placeholder="pet name" />
+                            <Field type="select" as={Select} name={itemName}>
+                              <MenuItem value="cat">cat</MenuItem>
+                              <MenuItem value="dog">dog</MenuItem>
+                              <MenuItem value="horse">horse</MenuItem>
+                            </Field>
+                            <Button onClick={() => arrayHelpers.remove(index)}>
+                              Delete pet
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }}
+              </FieldArray>
+            </div>
+            <div>
               <Button disabled={isSubmitting} type="submit">
                 Submit
               </Button>
             </div>
+
             <pre>{JSON.stringify(values)}</pre>
             <pre>{JSON.stringify(errors)}</pre>
           </Form>
